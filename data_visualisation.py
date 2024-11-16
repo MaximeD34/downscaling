@@ -45,6 +45,17 @@ def plot_compare_between_simulation(data, start, stop, step):
     # data of shape torch.Size([N, T, 2, 5, 250])
     # plot 14 lines for each simulation composed of two plots (h and q) for each time step
 
+    '''
+    Plots the data for each simulation between start and stop time steps with a step size of step
+
+    Parameters:
+    data: torch.tensor of shape (N, T, 2, row, col)
+    start: int, starting time step
+    stop: int, stopping time step
+    step: int, step size between time steps
+
+    '''
+
     stop = stop + 1
 
     # assert inputs
@@ -52,6 +63,8 @@ def plot_compare_between_simulation(data, start, stop, step):
     assert stop <= data.shape[1], 'stop must be smaller than the second dimension (time steps) of data'
     assert step > 0, 'step must be positive'
     assert start >= 0, 'start must be positive'
+
+    assert stop - start < 3, 'only three time steps can be compared'
 
     num_simulations = 14
     num_time_steps = (stop - start) // step
