@@ -26,18 +26,25 @@ def plot_batch(data, start, stop, step):
     assert step > 0, 'step must be positive'
     assert start >= 0, 'start must be positive'
 
+    min_h = data[start:stop, 0].min()
+    max_h = data[start:stop, 0].max()
+
+    min_q = data[start:stop, 1].min()
+    max_q = data[start:stop, 1].max()
+
+
 
     fig, axs = plt.subplots((stop-start) // step, 2, figsize=(10, 5))
 
     for i in range((stop-start) // step):
-        axs[i, 0].imshow(data[start + i*step, 0], aspect='auto')
-        axs[i, 1].imshow(data[start + i*step, 1], aspect='auto')
+        axs[i, 0].imshow(data[start + i*step, 0], aspect='auto', vmin=min_h, vmax=max_h)
+        axs[i, 1].imshow(data[start + i*step, 1], aspect='auto', vmin=min_q, vmax=max_q)
 
         # add titles and color bars
         axs[i, 0].set_title(f'h {start + i*step}')
         axs[i, 1].set_title(f'q {start + i*step}')
-        fig.colorbar(axs[i, 0].imshow(data[start + i*step, 0], aspect='auto'), ax=axs[i, 0])
-        fig.colorbar(axs[i, 1].imshow(data[start + i*step, 1], aspect='auto'), ax=axs[i, 1])
+        fig.colorbar(axs[i, 0].imshow(data[start + i*step, 0], aspect='auto', vmin=min_h, vmax=max_h), ax=axs[i, 0], )
+        fig.colorbar(axs[i, 1].imshow(data[start + i*step, 1], aspect='auto',vmin=min_q, vmax=max_q), ax=axs[i, 1])
 
     plt.show()
 
