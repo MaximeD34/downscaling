@@ -1,6 +1,18 @@
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import torch.nn.functional as F
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def plot_single(data):
+
+    '''
+    Input : a tensor of shape (2, row, col)
+    Plots a single image composed of two plots (h and q)
+    '''
+
+
     fig, axs = plt.subplots(1, 2, figsize=(10, 2))
 
     axs[0].imshow(data[0], aspect='auto')
@@ -31,8 +43,6 @@ def plot_batch(data, start, stop, step):
 
     min_q = data[start:stop, 1].min()
     max_q = data[start:stop, 1].max()
-
-
 
     fig, axs = plt.subplots((stop-start) // step, 2, figsize=(10, 5))
 
@@ -93,3 +103,33 @@ def plot_compare_between_simulation(data, start, stop, step):
 
     plt.tight_layout()
     plt.show()
+
+def get_bilinear_interpolation(dataLR, target_shape):
+
+    '''
+    Input dataLR: 2D tensor of shape (row, col)
+    Input target_shape: tuple of (row, col)
+
+    Output: 2D tensor of shape (row, col)
+
+    Returns the bilinear interpolation of the input dataLR to the target_shape
+    '''
+
+    return F.interpolate(dataLR.unsqueeze(0).unsqueeze(0), size=target_shape, mode="bilinear").squeeze(0).squeeze(0)
+
+
+def plot_bilinear_interpolation(dataLR, target_shape):
+
+    '''
+    Input dataLR: 2D tensor of shape (C, row, col)
+    Input target_shape: tuple of (row, col)
+
+    Output: None
+
+    Plots the bilinear interpolation of the input dataLR to the target_shape
+    '''
+
+    upscaled_h = get_bilinear_interpolation(dataLR[0], target_shape)
+    upscaled_q = get_bilinear_interpolation(dataLR[1], target_shape)
+
+    plot_single(torch.stack([upscaled_h, upscaled_q], dim=0))
