@@ -15,6 +15,7 @@ def plot_single(data, title=None):
 
     fig, axs = plt.subplots(1, 2, figsize=(10, 2))
 
+    data = data.cpu()
     axs[0].imshow(data[0], aspect='auto')
     axs[1].imshow(data[1], aspect='auto')
 
