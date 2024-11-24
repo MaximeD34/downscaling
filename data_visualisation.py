@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def plot_single(data):
+def plot_single(data, title=None):
 
     '''
     Input : a tensor of shape (2, row, col)
@@ -23,6 +23,9 @@ def plot_single(data):
     axs[1].set_title('q')
     fig.colorbar(axs[0].imshow(data[0], aspect='auto'), ax=axs[0])
     fig.colorbar(axs[1].imshow(data[1], aspect='auto'), ax=axs[1])
+
+    if title:
+        plt.suptitle(title)
 
     plt.show()
 
@@ -132,4 +135,4 @@ def plot_bilinear_interpolation(dataLR, target_shape):
     upscaled_h = get_bilinear_interpolation(dataLR[0], target_shape)
     upscaled_q = get_bilinear_interpolation(dataLR[1], target_shape)
 
-    plot_single(torch.stack([upscaled_h, upscaled_q], dim=0))
+    plot_single(torch.stack([upscaled_h, upscaled_q], dim=0), title='Bilinear Interpolation')
