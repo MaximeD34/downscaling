@@ -1,4 +1,5 @@
 # Imports : 
+import io
 import streamlit as st
 import torch
 import matplotlib.pyplot as plt
@@ -21,8 +22,9 @@ dataHR = dataHR_dict["data"].numpy()
 to_plot = dataHR[0, 300, 1]
 
 # Heatmap colored with Matplotlib
-fig, ax = plt.subplots(figsize=(8, 3))  # Adjustement of the size (width, height)
-cax = ax.imshow(to_plot, cmap='viridis', aspect='auto')  # 'viridis' is a colored pallete
+fig, ax = plt.subplots(figsize=(10, 8))  # Adjustement of the size (width, height)
+# cax = ax.imshow(to_plot, cmap='plasma', aspect='auto')  # 'inferno' is a colored pallete
+cax = ax.imshow(to_plot, cmap='viridis', aspect='auto', interpolation='bicubic')
 fig.colorbar(cax, ax=ax)  # color bar
 ax.set_title("Heatmap of the data")  # graphic title
 ax.set_xlabel("X-axis")
@@ -31,4 +33,6 @@ ax.set_ylabel("Y-axis")
 # Affichage dans Streamlit
 st.write("Heatmap of the data")
 st.pyplot(fig)
+
+
 
