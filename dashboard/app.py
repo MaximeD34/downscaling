@@ -18,11 +18,11 @@ if name:
 dataHR_dict = torch.load("../serialized_data/dataHR.pt")
 dataHR = dataHR_dict["data"].numpy()
 
-to_plot = dataHR[0, 300, 1]
+to_plot = dataHR[3, 329, 0]
 
 # Heatmap colored with Matplotlib
 fig, ax = plt.subplots(figsize=(8, 3))  # Adjustement of the size (width, height)
-cax = ax.imshow(to_plot, cmap='viridis', aspect='auto')  # 'viridis' is a colored pallete
+cax = ax.imshow(to_plot, cmap='inferno', aspect='auto')  # 'viridis' is a colored pallete
 fig.colorbar(cax, ax=ax)  # color bar
 ax.set_title("Heatmap of the data")  # graphic title
 ax.set_xlabel("X-axis")
