@@ -1,7 +1,10 @@
+import sys
+sys.path.append('../../downscaling_module')
+
 import torch
 from torch.utils.data import Dataset
 
-from downscaling_module.data.transforms import transforms
+from data.transforms import transforms
 
 
 class ConvLSTMDataset(Dataset):

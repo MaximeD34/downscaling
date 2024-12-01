@@ -5,7 +5,7 @@ from torchvision.transforms import Compose
 
 def cutSequence(sample):
     """
-    Cut the sequence length of the 'lr' and 'hr' tensors in the sample to remove the 100 first time steps.
+    Cut the sequence length of the 'lr' and 'hr' tensors in the sample to remove the 101 first time steps.
     Args:
         sample (dict): Dictionary containing 'lr' and 'hr' tensors.
     Returns:
@@ -13,8 +13,8 @@ def cutSequence(sample):
     """
     print("Transforming with cutSequence")
 
-    sample['lr'] = sample['lr'][:, 100:]
-    sample['hr'] = sample['hr'][:, 100:]
+    sample['lr'] = sample['lr'][:, 101:]
+    sample['hr'] = sample['hr'][:, 101:]
 
     return sample
 
@@ -65,7 +65,7 @@ def bilinearInterpolation(sample):
 
 def min_max_scale(sample, epsilon=1e-8):
     """
-    Normalize the 'lr' and 'hr' tensors in the sample to the range [-1, 1].
+    Normalize the 'lr' and 'hr' tensors in the sample to the range [-0.5, 0.5].
     Args:
         sample (dict): Dictionary containing 'lr' and 'hr' tensors.
     Returns:
@@ -81,12 +81,23 @@ def min_max_scale(sample, epsilon=1e-8):
         min_vals = torch.amin(tensor, dim=(0, 1, 3, 4), keepdim=True)
         max_vals = torch.amax(tensor, dim=(0, 1, 3, 4), keepdim=True)
 
-        sample[key] = 2 * (tensor - min_vals) / (max_vals - min_vals + epsilon) - 1
+        # Normalize to the range [-0.5, 0.5]
+        sample[key] = ((tensor - min_vals) / (max_vals - min_vals + epsilon)) - 0.5
 
     return sample
+
+def create_batches(sample, size=10):
+
+    for key in ['lr', 'hr']:
+        tensor = sample[key]
+        sample[key] = tensor.reshape(tensor.shape[0]*tensor.shape[1] // size, size, tensor.shape[2], tensor.shape[3], tensor.shape[4])
+
+    return sample
+
 
 transforms = Compose([
     cutSequence,
     bilinearInterpolation,
-    min_max_scale
+    min_max_scale,
+    create_batches
 ])

@@ -1,19 +1,15 @@
 import sys
-import os
-
-# Add the parent directory to the system path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../data')))
-
-
+sys.path.append('../../downscaling_module')
 
 # overfit_one_sample.py
 import torch
 from data.datasets import ConvLSTMDataset
-from models.convlstm import ConvLSTMModel
-from data.transforms import BilinearInterpolation
+from models.convlstm_commented import ConvLSTM
 import torch.nn as nn
 import torch.optim as optim
+from data.datasets import transforms
+
+from icecream import ic
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -24,23 +20,24 @@ def main():
     hr_data = torch.load('serialized_data/dataHR.pt')['data']  # Shape: (S, T, C, H_hr, W_hr)
 
     # Define the transform
-    transform = BilinearInterpolation()
+    transform = transforms
 
     # Create the dataset
     dataset = ConvLSTMDataset(lr_data, hr_data, transform=transform)
 
     # Get a single sample
-    lr_sample, hr_sample = dataset[0]  # Shapes: (T, C, H, W)
-
-    # Optionally, you can trim the sequence length for faster testing
-    # For example, use only the first 10 time steps
-    seq_len = 50
-    lr_sample = lr_sample[300:300+seq_len]
-    hr_sample = hr_sample[300:300+seq_len]
+    lr_sample, hr_sample = dataset[49]  # Shapes: (T, C, H, W)
 
     # Add batch dimension
     lr_sample = lr_sample.unsqueeze(0)  # Shape: (1, T, C, H, W)
     hr_sample = hr_sample.unsqueeze(0)  # Shape: (1, T, C, H, W)
+
+    # #DEBUG -------------------------
+    # lr_sample = torch.ones((1, 10, 2, 5, 250)) / (-2)
+    # hr_sample = torch.ones((1, 10, 2, 5, 250)) / (-2)
+
+    ic(torch.min(lr_sample), torch.max(lr_sample))
+    ic(torch.min(hr_sample), torch.max(hr_sample))
 
     # Move tensors to device
     lr_sample = lr_sample.to(device)
@@ -50,20 +47,24 @@ def main():
 
     # Model parameters
     input_dim = lr_sample.shape[2]    # Number of input channels C
-    output_dim = hr_sample.shape[2]   # Number of output channels
-    hidden_dim = [16, 32]             # Hidden dimensions for each layer
+    # output_dim = hr_sample.shape[2]   # Number of output channels
+    hidden_dim = [2,5]             # Hidden dimensions for each layer
     kernel_size = (3, 3)              # Kernel size for each layer
-    num_layers = len(hidden_dim)
-    num_epochs = 2000                  # Increase the number of epochs to ensure overfitting
+    num_layers = 2   # Number of layers
+    num_epochs = 5000                  # Increase the number of epochs to ensure overfitting
     learning_rate = 0.001
 
+    print("Input dimension:", input_dim, "Hidden dimensions:", hidden_dim, "Kernel size:", kernel_size, "Number of layers:", num_layers)
+
     # Initialize the model
-    model = ConvLSTMModel(
+    model = ConvLSTM(
         input_dim=input_dim,
         hidden_dim=hidden_dim,
         kernel_size=kernel_size,
         num_layers=num_layers,
-        output_dim=output_dim
+        batch_first=True,
+        bias=True,
+        return_all_layers=True        
     ).to(device)
 
     # Loss and optimizer
@@ -75,7 +76,15 @@ def main():
         model.train()
 
         # Forward pass
-        outputs = model(lr_sample)  # Shape: (1, T, output_dim, H, W)
+        outputs = model(lr_sample)[0][0] # Shape: (1, T, output_dim, H, W)
+
+        # ic(type(outputs))
+        # ic(len(outputs[0]))
+        # ic(len(outputs[0][0]))
+        # ic(len(outputs[1]))
+        # ic(outputs[0][0].shape)
+        # ic(len(outputs[1][0]))
+        # ic(outputs[1][0][0].shape)
 
         # Compute loss
         loss = criterion(outputs, hr_sample)
@@ -90,7 +99,7 @@ def main():
             print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.6f}')
 
     # Save the trained model
-    torch.save(model, 'convlstm_overfit_model.pth')
+    torch.save(model.state_dict(), 'convlstm_overfit_model.pth')
 
 if __name__ == '__main__':
     main()
