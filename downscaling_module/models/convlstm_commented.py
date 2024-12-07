@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import torch.nn.functional as F
 
 class ConvLSTMCell(nn.Module):
 
@@ -19,6 +20,7 @@ class ConvLSTMCell(nn.Module):
         self.hidden_dim = hidden_dim        # Number of hidden channels (C_hidden)
         self.kernel_size = kernel_size      # Kernel size (K_h, K_w)
         self.padding = (kernel_size[0] // 2, kernel_size[1] // 2)  # Padding to maintain spatial dimensions
+        
         self.bias = bias
 
         # The convolution layer processes concatenated input and hidden state
@@ -28,7 +30,8 @@ class ConvLSTMCell(nn.Module):
             in_channels=self.input_dim + self.hidden_dim,
             out_channels=4 * self.hidden_dim,
             kernel_size=self.kernel_size,
-            padding=self.padding,
+            padding=0,
+            dilation= 2,
             bias=self.bias
         )
 
@@ -54,9 +57,16 @@ class ConvLSTMCell(nn.Module):
         # combined shape: (batch_size, input_dim + hidden_dim, height, width)
         combined = torch.cat([input_tensor, h_cur], dim=1)
 
+        # Apply reflective padding
+        padding = (self.padding[1], self.padding[1], self.padding[0], self.padding[0])
+        combined_padded = F.pad(combined, padding, mode='circular')
+
+
         # Apply convolution to the combined tensor
         # combined_conv shape: (batch_size, 4 * hidden_dim, height, width)
-        combined_conv = self.conv(combined)
+        # combined_conv = self.conv(combined)
+        combined_conv = self.conv(combined_padded)
+
 
         # Split the convolution output into four chunks along the channel dimension
         # Each gate tensor shape: (batch_size, hidden_dim, height, width)

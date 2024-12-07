@@ -94,10 +94,17 @@ def create_batches(sample, size=10):
 
     return sample
 
+def manual_vertical_upscalling(sample):
+
+    for key in ['lr', 'hr']:
+        tensor = sample[key]
+        sample[key] = tensor.repeat_interleave(5, dim=3)
+
+    return sample
 
 transforms = Compose([
     cutSequence,
     bilinearInterpolation,
     min_max_scale,
-    create_batches
+    create_batches,
 ])

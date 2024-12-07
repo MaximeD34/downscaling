@@ -1,8 +1,14 @@
+import sys
+
+sys.path.append('../../')
+sys.path.append('../../downscaling_module')
+
+
 # train.py
 import torch
 from torch.utils.data import DataLoader
 from data.datasets import ConvLSTMDataset
-from convlstm import ConvLSTMModel
+from models.convlstm_commented import ConvLSTM
 from data.transforms import BilinearInterpolation
 import torch.nn as nn
 import torch.optim as optim

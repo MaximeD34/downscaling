@@ -11,6 +11,8 @@ from data.datasets import transforms
 
 from icecream import ic
 
+from pytorch_msssim import SSIM
+
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -43,15 +45,21 @@ def main():
     lr_sample = lr_sample.to(device)
     hr_sample = hr_sample.to(device)
 
+    # #DEBUG -------------------------
+    # lr_sample = lr_sample[:, :, 0, :, :]
+    # hr_sample = hr_sample[:, :, 0, :, :]
+    # lr_sample.unsqueeze_(2)
+    # hr_sample.unsqueeze_(2)
+
     print("Shapes of the sample:", lr_sample.shape, hr_sample.shape)
 
     # Model parameters
     input_dim = lr_sample.shape[2]    # Number of input channels C
     # output_dim = hr_sample.shape[2]   # Number of output channels
-    hidden_dim = [2,5]             # Hidden dimensions for each layer
+    hidden_dim = [2]             # Hidden dimensions for each layer
     kernel_size = (3, 3)              # Kernel size for each layer
-    num_layers = 2   # Number of layers
-    num_epochs = 5000                  # Increase the number of epochs to ensure overfitting
+    num_layers = 1   # Number of layers
+    num_epochs = 3000                  # Increase the number of epochs to ensure overfitting
     learning_rate = 0.001
 
     print("Input dimension:", input_dim, "Hidden dimensions:", hidden_dim, "Kernel size:", kernel_size, "Number of layers:", num_layers)
@@ -64,11 +72,15 @@ def main():
         num_layers=num_layers,
         batch_first=True,
         bias=True,
-        return_all_layers=True        
+        return_all_layers=False        
     ).to(device)
 
     # Loss and optimizer
-    criterion = nn.MSELoss()
+    # criterion = nn.MSELoss()
+
+    criterion_SSIM = SSIM(win_size=5, data_range=1.0, channel=2, size_average=True)
+    criterion_MSE = nn.MSELoss()
+
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # Training loop
@@ -87,7 +99,15 @@ def main():
         # ic(outputs[1][0][0].shape)
 
         # Compute loss
-        loss = criterion(outputs, hr_sample)
+        # Compute loss
+        batch_size, T, C, H, W = outputs.shape
+
+        # Reshape outputs and hr_sample to collapse the time dimension into the batch dimension
+        outputs_reshaped = outputs.view(batch_size * T, C, H, W)
+        hr_sample_reshaped = hr_sample.view(batch_size * T, C, H, W)
+
+        # Compute SSIM loss
+        loss = (1 - criterion_SSIM(outputs_reshaped, hr_sample_reshaped)) + criterion_MSE(outputs_reshaped, hr_sample_reshaped)
 
         # Backward and optimize
         optimizer.zero_grad()
