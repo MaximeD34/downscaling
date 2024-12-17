@@ -5,10 +5,10 @@ import torch
 import matplotlib.pyplot as plt
 
 # Title
-st.title("Bienvenue sur mon application Streamlit !")
+st.title("Bienvenue sur le plot !")
 
 # Intro text
-st.write("Ceci est une application Streamlit minimale.")
+st.write("Ceci est le plot de notre projet.")
 
 # Interaction exemple
 name = st.text_input("Quel est votre nom ?")
