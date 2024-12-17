@@ -30,6 +30,64 @@ def plot_single(data, title=None):
 
     plt.show()
 
+def plot_two(data1, data2, title=None):
+
+    '''
+    Input : 2 tensors of shape (2, row, col)
+    Plots two image both composed of two plots (h and q)
+    '''
+    fig, axs = plt.subplots(1, 2, figsize=(10, 2))
+
+    data1 = data1.cpu()
+    data2 = data2.cpu()
+
+    min_h = min(data1[0].min(), data2[0].min())
+    max_h = max(data1[0].max(), data2[0].max())
+
+    min_q = min(data1[1].min(), data2[1].min())
+    max_q = max(data1[1].max(), data2[1].max())
+
+    axs[0].imshow(data1[0], aspect='auto', vmin=min_h, vmax=max_h)
+    axs[1].imshow(data1[1], aspect='auto', vmin=min_q, vmax=max_q)
+
+    # add titles and color bars
+    axs[0].set_title('h')
+    axs[1].set_title('q')
+
+    fig.colorbar(axs[0].imshow(data1[0], aspect='auto', vmin=min_h, vmax=max_h), ax=axs[0])
+    fig.colorbar(axs[1].imshow(data1[1], aspect='auto', vmin=min_q, vmax=max_q), ax=axs[1])
+
+    fig, axs = plt.subplots(1, 2, figsize=(10, 2))
+
+    axs[0].imshow(data2[0], aspect='auto', vmin=min_h, vmax=max_h)
+    axs[1].imshow(data2[1], aspect='auto', vmin=min_q, vmax=max_q)
+
+    # add titles and color bars
+    axs[0].set_title('h')
+    axs[1].set_title('q')
+
+    fig.colorbar(axs[0].imshow(data2[0], aspect='auto', vmin=min_h, vmax=max_h), ax=axs[0])
+
+    fig.colorbar(axs[1].imshow(data2[1], aspect='auto', vmin=min_q, vmax=max_q), ax=axs[1])
+
+    if title:
+        plt.suptitle(title)
+
+    plt.show()
+
+def plot_two_sequences(data1, data2, title=None):
+    '''
+    Input : 2 tensors of shape (T, 2, row, col)
+    Plots T*two image both composed of two plots (h and q)
+    '''
+
+    T = data1.shape[0]
+
+    minh = min(data1[:, 0].min(), data2[:, 0].min())
+    maxh = max(data1[:, 0].max(), data2[:, 0].max())
+
+
+
 def plot_batch(data, start, stop, step):
     # data of shape torch.Size([10, 2, 5, 250])
     # plot 10 * 2 heatmaps of shape (5, 250) next to each other

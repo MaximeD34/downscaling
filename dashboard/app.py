@@ -19,7 +19,7 @@ if name:
 dataHR_dict = torch.load("../serialized_data/dataHR.pt")
 dataHR = dataHR_dict["data"].numpy()
 
-to_plot = dataHR[0, 300, 1]
+to_plot = dataHR[3, 329, 0]
 
 # Heatmap colored with Matplotlib
 fig, ax = plt.subplots(figsize=(10, 8))  # Adjustement of the size (width, height)
